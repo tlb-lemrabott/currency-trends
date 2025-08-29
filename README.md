@@ -61,10 +61,78 @@ for currency in currency_data.data:
         print(f"  {rate.day}: {rate.value}")
 ```
 
+### Database Operations
+
+```python
+from src.data.database import DatabaseManager
+
+# Initialize database
+db_manager = DatabaseManager("currency_trends.db")
+
+# Insert currency data
+db_manager.insert_currency_data(currency_data)
+
+# Query exchange rates
+usd_rates = db_manager.get_exchange_rates_by_currency("USD")
+stats = db_manager.get_exchange_rate_statistics("USD")
+```
+
+### Data Ingestion
+
+```python
+from src.data.ingestion import DataIngestionPipeline
+
+# Initialize pipeline
+pipeline = DataIngestionPipeline(db_manager)
+
+# Ingest from file
+result = pipeline.ingest_from_file('data/sample_currency_data.json')
+
+# Ingest from API
+result = pipeline.ingest_from_api("https://api.example.com/currencies")
+
+# Incremental update
+result = pipeline.ingest_incremental_update(new_data)
+```
+
+### Data Preprocessing
+
+```python
+from src.data.preprocessing import DataPreprocessor
+
+# Initialize preprocessor
+preprocessor = DataPreprocessor()
+
+# Complete preprocessing pipeline
+config = {
+    'handle_missing': 'interpolate',
+    'handle_outliers': 'iqr',
+    'normalize': 'minmax',
+    'add_indicators': True,
+    'add_time_features': True,
+    'lags': [1, 7, 30]
+}
+
+df, summary = preprocessor.preprocess_complete(currency_data, config)
+```
+
 ### Running Tests
 
 ```bash
 python -m pytest tests/ -v
+```
+
+### Running Examples
+
+```bash
+# Database example
+python examples/database_example.py
+
+# Ingestion example
+python examples/ingestion_example.py
+
+# Preprocessing example
+python examples/preprocessing_example.py
 ```
 
 ## Development
@@ -80,8 +148,19 @@ The project is being developed following a prioritized list of 20 issues:
 
 - ✅ **Issue #1**: Project Environment Setup
 - ✅ **Issue #2**: Data Schema Validation
-- 🔄 **Issue #3**: Database Schema Design (in progress)
-- ⏳ **Issues #4-20**: Pending implementation
+- ✅ **Issue #3**: Database Schema Design
+- ✅ **Issue #4**: Data Ingestion Pipeline
+- ✅ **Issue #5**: Basic Data Preprocessing
+- ⏳ **Issues #6-20**: Pending implementation
+
+### Completed Features
+
+1. **Data Validation**: Robust JSON schema validation with comprehensive error handling
+2. **Database Management**: SQLite database with efficient indexing and CRUD operations
+3. **Data Ingestion**: Support for file, directory, API, and incremental data loading
+4. **Data Preprocessing**: Complete data cleaning pipeline with technical indicators
+5. **Testing**: Comprehensive unit tests for all modules (60+ test cases)
+6. **Documentation**: Detailed examples and usage instructions
 
 ## License
 
