@@ -424,7 +424,7 @@ class CurrencyDashboard:
             rows=2, cols=2,
             subplot_titles=('Historical Seasonal Peaks', 'Monthly Performance', 
                           'Predicted Peaks', 'Confidence Factors'),
-            specs=[[{"secondary_y": False}, {"secondary_y": False}],
+            specs=[[{"secondary_y": True}, {"secondary_y": False}],
                    [{"secondary_y": False}, {"secondary_y": False}]],
             vertical_spacing=0.12,
             horizontal_spacing=0.1
