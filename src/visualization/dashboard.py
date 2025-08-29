@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,8 @@ class CurrencyDashboard:
                                     {'label': 'Price Trends', 'value': 'trends'},
                                     {'label': 'Moving Averages', 'value': 'ma'},
                                     {'label': 'Volatility Analysis', 'value': 'volatility'},
-                                    {'label': 'Correlation Matrix', 'value': 'correlation'}
+                                    {'label': 'Correlation Matrix', 'value': 'correlation'},
+                                    {'label': 'Seasonal Predictions', 'value': 'seasonal_predictions'}
                                 ],
                                 value='trends',
                                 className="mb-3"
@@ -155,6 +157,30 @@ class CurrencyDashboard:
                 df = preprocessor.add_technical_indicators(df)
                 df = preprocessor.add_time_features(df)
                 
+                # For seasonal predictions, we need extended data
+                if analysis_type == 'seasonal_predictions':
+                    # Create extended sample data for demonstration
+                    from datetime import datetime
+                    start_date = datetime(2019, 1, 1)
+                    end_date = datetime(2024, 12, 31)
+                    dates = pd.date_range(start=start_date, end=end_date, freq='D')
+                    
+                    extended_data = []
+                    for date in dates:
+                        month = date.month
+                        year_factor = (date.year - 2019) * 0.5
+                        seasonal_component = 10 * np.sin(2 * np.pi * month / 12) + 5 * np.sin(2 * np.pi * month / 6)
+                        noise = np.random.normal(0, 2)
+                        usd_value = 100 + year_factor + seasonal_component + noise
+                        
+                        extended_data.append({
+                            'day': date,
+                            'currency_code': 'USD',
+                            'value': usd_value
+                        })
+                    
+                    df = pd.DataFrame(extended_data)
+                
                 # Filter by currency if specified
                 if currency and currency != 'all':
                     df = df[df['currency_code'] == currency]
@@ -189,6 +215,8 @@ class CurrencyDashboard:
             return self.create_volatility_chart(df, currency)
         elif analysis_type == 'correlation':
             return self.create_correlation_chart(df)
+        elif analysis_type == 'seasonal_predictions':
+            return self.create_seasonal_predictions_chart(df, currency)
         else:
             return self.create_price_chart(df, currency)
     
@@ -377,6 +405,135 @@ class CurrencyDashboard:
             title="Currency Correlation Matrix",
             template='plotly_white'
         )
+        
+        return fig
+    
+    def create_seasonal_predictions_chart(self, df: pd.DataFrame, currency: str) -> go.Figure:
+        """Create seasonal predictions chart"""
+        from src.analysis.seasonality import SeasonalityAnalyzer
+        
+        # Initialize seasonality analyzer
+        analyzer = SeasonalityAnalyzer()
+        
+        # Get seasonal predictions
+        predictions = analyzer.predict_seasonal_peaks(df, currency_code=currency, forecast_years=2)
+        historical_peaks = analyzer.analyze_historical_seasonal_peaks(df, currency_code=currency)
+        
+        # Create subplot with historical data and predictions
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=('Historical Seasonal Peaks', 'Monthly Performance', 
+                          'Predicted Peaks', 'Confidence Factors'),
+            specs=[[{"secondary_y": False}, {"secondary_y": False}],
+                   [{"secondary_y": False}, {"secondary_y": False}]],
+            vertical_spacing=0.12,
+            horizontal_spacing=0.1
+        )
+        
+        # 1. Historical Seasonal Peaks
+        if 'yearly_peaks' in historical_peaks:
+            years = list(historical_peaks['yearly_peaks'].keys())
+            peak_months = [historical_peaks['yearly_peaks'][year]['peak_month'] for year in years]
+            peak_values = [historical_peaks['yearly_peaks'][year]['peak_value'] for year in years]
+            
+            fig.add_trace(
+                go.Scatter(
+                    x=years,
+                    y=peak_months,
+                    mode='lines+markers',
+                    name='Peak Month',
+                    line=dict(color='blue', width=3),
+                    marker=dict(size=8)
+                ),
+                row=1, col=1
+            )
+            
+            fig.add_trace(
+                go.Scatter(
+                    x=years,
+                    y=peak_values,
+                    mode='lines+markers',
+                    name='Peak Value',
+                    line=dict(color='red', width=2),
+                    marker=dict(size=6),
+                    yaxis='y2'
+                ),
+                row=1, col=1, secondary_y=True
+            )
+        
+        # 2. Monthly Performance
+        if 'monthly_performance' in historical_peaks:
+            months = list(historical_peaks['monthly_performance'].keys())
+            avg_values = [historical_peaks['monthly_performance'][month]['average_value'] for month in months]
+            month_names = [datetime(2024, month, 1).strftime('%b') for month in months]
+            
+            fig.add_trace(
+                go.Bar(
+                    x=month_names,
+                    y=avg_values,
+                    name='Avg Monthly Value',
+                    marker_color='lightblue'
+                ),
+                row=1, col=2
+            )
+        
+        # 3. Predicted Peaks
+        if 'predictions' in predictions:
+            for year, year_data in predictions['predictions'].items():
+                months = [peak['month'] for peak in year_data['predicted_peaks']]
+                values = [peak['predicted_value'] for peak in year_data['predicted_peaks']]
+                confidences = [peak['confidence'] for peak in year_data['predicted_peaks']]
+                month_names = [datetime(2024, month, 1).strftime('%b') for month in months]
+                
+                fig.add_trace(
+                    go.Scatter(
+                        x=month_names,
+                        y=values,
+                        mode='lines+markers',
+                        name=f'Predicted {year}',
+                        line=dict(width=2),
+                        marker=dict(size=8)
+                    ),
+                    row=2, col=1
+                )
+        
+        # 4. Confidence Factors
+        if 'confidence_factors' in predictions:
+            confidence = predictions['confidence_factors']
+            factors = list(confidence.keys())
+            values = list(confidence.values())
+            
+            fig.add_trace(
+                go.Bar(
+                    x=factors,
+                    y=values,
+                    name='Confidence',
+                    marker_color='orange'
+                ),
+                row=2, col=2
+            )
+        
+        # Update layout
+        fig.update_layout(
+            title=f"Seasonal Predictions Analysis {'(' + currency + ')' if currency != 'all' else ''}",
+            height=800,
+            template='plotly_white',
+            showlegend=True
+        )
+        
+        # Update axes
+        fig.update_xaxes(title_text="Year", row=1, col=1)
+        fig.update_yaxes(title_text="Peak Month", row=1, col=1)
+        fig.update_yaxes(title_text="Peak Value", row=1, col=1, secondary_y=True)
+        
+        fig.update_xaxes(title_text="Month", row=1, col=2)
+        fig.update_yaxes(title_text="Average Value", row=1, col=2)
+        
+        fig.update_xaxes(title_text="Month", row=2, col=1)
+        fig.update_yaxes(title_text="Predicted Value", row=2, col=1)
+        
+        fig.update_xaxes(title_text="Factor", row=2, col=2)
+        fig.update_yaxes(title_text="Confidence Score", row=2, col=2)
         
         return fig
     
