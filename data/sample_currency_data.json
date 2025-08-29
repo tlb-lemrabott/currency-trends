@@ -1,0 +1,60 @@
+{
+    "success": true,
+    "message": "Successfully retrieved currencies",
+    "data": [
+        {
+            "id": 1,
+            "nameFr": "Dollar US",
+            "nameAr": "الدولار الأمريكي",
+            "unity": 1,
+            "code": "USD",
+            "exchangeRates": [
+                {
+                    "id": 137058,
+                    "day": "2016-06-14",
+                    "value": "333.21",
+                    "endDate": "2016-06-15"
+                },
+                {
+                    "id": 173075,
+                    "day": "2025-08-20",
+                    "value": "389.24",
+                    "endDate": "2025-08-21"
+                },
+                {
+                    "id": 173094,
+                    "day": "2025-08-21",
+                    "value": "392.29",
+                    "endDate": "2025-08-25"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "nameFr": "Euro",
+            "nameAr": "يورو",
+            "unity": 1,
+            "code": "EUR",
+            "exchangeRates": [
+                {
+                    "id": 137052,
+                    "day": "2016-06-14",
+                    "value": "423.21",
+                    "endDate": "2016-06-15"
+                },
+                {
+                    "id": 137071,
+                    "day": "2025-08-20",
+                    "value": "433.24",
+                    "endDate": "2025-08-21"
+                },
+                {
+                    "id": 137128,
+                    "day": "2025-08-21",
+                    "value": "440.29",
+                    "endDate": "2025-08-25"
+                }
+            ]
+        }
+    ]
+}

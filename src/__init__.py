@@ -1,0 +1,1 @@
+# Currency Trends Analysis Package
