@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "message": "Currency exchange rate data",
+  "data": [
+    {
+      "id": 1,
+      "attributes": {
+        "name_fr": "Currency Name in French",
+        "name_ar": "اسم العملة بالعربية",
+        "unity": 100,
+        "code": "XXX",
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z",
+        "publishedAt": "2024-01-01T00:00:00.000Z",
+        "money_today_changes": {
+          "data": [
+            {
+              "id": 1,
+              "attributes": {
+                "day": "2024-01-01",
+                "value": "100.00",
+                "createdAt": "2024-01-01T00:00:00.000Z",
+                "updatedAt": "2024-01-01T00:00:00.000Z",
+                "publishedAt": "2024-01-01T00:00:00.000Z",
+                "end_date": "2024-01-02"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

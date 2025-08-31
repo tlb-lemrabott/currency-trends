@@ -44,6 +44,15 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+4. **Set up data files** (Required):
+```bash
+# Copy the data template
+cp data/data_template.json data/sample_currency_data.json
+
+# Edit the file with your currency data
+# See data/README.md for detailed instructions
+```
+
 ## Usage
 
 ### Data Validation

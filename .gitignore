@@ -143,3 +143,30 @@ Thumbs.db
 *.sqlite
 logs/
 temp/
+
+# Data files - Keep sensitive data private
+data/*.json
+data/sample_*.json
+data/*_currency_data.json
+data/*_sample_*.json
+
+# Database files
+*.db
+*.sqlite3
+*.sql
+
+# API keys and secrets
+.env
+.env.local
+.env.production
+secrets.json
+config.json
+credentials.json
+
+# Large data files
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.h5
+*.hdf5
