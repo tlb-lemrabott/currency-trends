@@ -48,7 +48,7 @@ class ExchangeRate:
         """Validate exchange rate value format"""
         try:
             float_val = float(value)
-            return float_val > 0
+            return float_val >= 0  # Allow zero values
         except (ValueError, TypeError):
             return False
 
@@ -106,6 +106,73 @@ class CurrencyData:
 class DataValidator:
     """Validator class for currency exchange rate data"""
     
+    @staticmethod
+    def detect_data_structure(json_data: Dict[str, Any]) -> str:
+        """
+        Detect the structure type of the JSON data
+        
+        Args:
+            json_data: Dictionary containing the JSON data
+            
+        Returns:
+            str: 'strapi' for Strapi-like structure, 'flat' for flat structure
+        """
+        if 'data' in json_data and isinstance(json_data['data'], list) and len(json_data['data']) > 0:
+            first_item = json_data['data'][0]
+            if 'attributes' in first_item:
+                return 'strapi'
+        return 'flat'
+    
+    @staticmethod
+    def transform_strapi_to_flat(json_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Transform Strapi-like structure to flat structure
+        
+        Args:
+            json_data: Dictionary containing Strapi-like JSON data
+            
+        Returns:
+            Dict[str, Any]: Transformed flat structure
+        """
+        transformed_data = {
+            'success': json_data.get('success', True),
+            'message': json_data.get('message', ''),
+            'data': []
+        }
+        
+        for currency_item in json_data.get('data', []):
+            currency_id = currency_item.get('id')
+            attributes = currency_item.get('attributes', {})
+            
+            # Transform currency data
+            currency_data = {
+                'id': currency_id,
+                'nameFr': attributes.get('name_fr', ''),
+                'nameAr': attributes.get('name_ar', ''),
+                'unity': attributes.get('unity', 1),
+                'code': attributes.get('code', ''),
+                'exchangeRates': []
+            }
+            
+            # Transform exchange rates
+            money_changes = attributes.get('money_today_changes', {})
+            if 'data' in money_changes:
+                for rate_item in money_changes['data']:
+                    rate_id = rate_item.get('id')
+                    rate_attributes = rate_item.get('attributes', {})
+                    
+                    rate_data = {
+                        'id': rate_id,
+                        'day': rate_attributes.get('day', ''),
+                        'value': rate_attributes.get('value', ''),
+                        'endDate': rate_attributes.get('end_date', '')
+                    }
+                    currency_data['exchangeRates'].append(rate_data)
+            
+            transformed_data['data'].append(currency_data)
+        
+        return transformed_data
+
     @staticmethod
     def validate_json_structure(json_data: Dict[str, Any]) -> bool:
         """
@@ -193,6 +260,12 @@ class DataValidator:
         Raises:
             ValueError: If data validation fails
         """
+        # Detect and transform data structure if needed
+        structure_type = cls.detect_data_structure(json_data)
+        if structure_type == 'strapi':
+            logger.info("Detected Strapi-like structure, transforming to flat structure")
+            json_data = cls.transform_strapi_to_flat(json_data)
+        
         # Validate overall structure
         if not cls.validate_json_structure(json_data):
             raise ValueError("Invalid JSON structure")
