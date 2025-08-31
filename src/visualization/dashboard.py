@@ -153,6 +153,9 @@ class CurrencyDashboard:
                 preprocessor = DataPreprocessor()
                 df = preprocessor.convert_to_dataframe(currency_data)
                 
+                # Remove duplicate entries to prevent reshape errors
+                df = df.drop_duplicates(subset=['day', 'currency_code']).reset_index(drop=True)
+                
                 # Add some technical indicators
                 df = preprocessor.add_technical_indicators(df)
                 df = preprocessor.add_time_features(df)
