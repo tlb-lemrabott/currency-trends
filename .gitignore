@@ -150,6 +150,10 @@ data/sample_*.json
 data/*_currency_data.json
 data/*_sample_*.json
 
+# Allow template and documentation files
+!data/data_template.json
+!data/README.md
+
 # Database files
 *.db
 *.sqlite3
